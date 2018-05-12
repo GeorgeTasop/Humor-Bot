@@ -44,21 +44,22 @@ def Create_Update_Database():
     epiloges = len(friends)*COUNT        
     conn.close()
 
-def Retweet(posted):
+def Retweet():
     
     global api, deleted
     funny=False
+    posted = False
+
+    #Sundesh sth bash
+    conn = sqlite3.connect('twitter.db')
     
-    while (funny==False):    
-        
-        
-        #Sundesh sth bash
-        conn = sqlite3.connect('twitter.db')
-        
-        #Count gia posa tweets periexei h bash
-        cur = conn.execute("SELECT COUNT(ID) FROM TWEETS;")
-        for r in cur:
-            epiloges = [r[0]]
+    #Count gia posa tweets periexei h bash
+    cur = conn.execute("SELECT COUNT(ID) FROM TWEETS;")
+    for r in cur:
+        epiloges = [r[0]]
+
+    
+    while (funny==False or posted == False):
         
         floatTweet = random.random()*epiloges[0]
         theTweet = int(floatTweet)
@@ -75,21 +76,22 @@ def Retweet(posted):
                     if(not(status.user_mentions)):
                         funny = True
 
-    #print status    
-    try:
-        posted = True
-        api.PostRetweet(status_id=intID[0])
-        cur = conn.execute("UPDATE TWEETS SET POSTED=1 WHERE ID=?;", (theTweet,))
-        #print intID
-    except Exception as error:
-        print "Exception caught"
-        print str(error)
-        posted = False
-        cur = conn.execute("UPDATE TWEETS SET POSTED=1 WHERE ID=?;", (theTweet,))
+    
+        if (funny == True):
+            try:
+                api.PostRetweet(status_id=intID[0])
+                conn.execute("UPDATE TWEETS SET POSTED=1 WHERE ID=?;", (theTweet,))
+                posted = True
+                print "Mphka sto try"
+            except Exception as error:
+                print "Exception caught"
+                print "ERROR: " + str(error)
+                posted = False
+                conn.execute("UPDATE TWEETS SET POSTED=1 WHERE ID=?;", (theTweet,))
 
-    finally:
-        conn.close()
-    return posted
+    #print "Closing database..."
+    conn.commit()
+    conn.close()
     
 
 
@@ -97,38 +99,37 @@ def Retweet(posted):
 
 def main():
     
-    start = time.clock()
-    SLEEP_TIME = 18 #seconds
-    BOT_O_CLOCK = 18 #seconds
+    SLEEP_TIME = 10 #seconds
+    BOT_O_CLOCK = 30 #seconds
 
-    print "Now starting Humor_bot_v0.01\n"
+    print "Now starting Humor_bot_v0.2...\n"
+    print "Loging in to Twitter account..."
     Login()
 
     #api.UpdateProfile(description="No original content, i am bot 🤖  🤖  🤖 Bot is: ON")
 
-    print "Login successfull! Bot is: ON"
-    while(True):
-
-        print "Creating or updating Database"
-        print "..."
-        Create_Update_Database()
-        
+    print "Login successfull! Bot is: ON\n"
     
-        while(True):
-            posted = False
-            while (posted == False):
-                posted = Retweet(posted)
-            print "I just retweeted! Check it here: 'https://twitter.com/G_Tasop'"
-            print "Time now:", strftime("%d %b %H:%M:%S", localtime())
-            print "Next retweet in", SLEEP_TIME, "seconds"
-            print "..."
-            time.sleep(SLEEP_TIME)
-            if ( (time.clock() - start) > BOT_O_CLOCK):
-                break
+
+    print "Creating Database..."
+    Create_Update_Database()
+    print "Database created!\n"
+    
+    start = time.clock()
+    
+    while(True):
+        print "Starting Retweet function..."
+        Retweet()
+        print "I just retweeted! Check it here: 'https://twitter.com/G_Tasop'"
+        print "Time now:", strftime("%d %b %H:%M:%S", localtime())
+        print "Next retweet in", SLEEP_TIME, "seconds\n"
+        print "...\n"
+        time.sleep(SLEEP_TIME)
         if ( (time.clock() - start) > BOT_O_CLOCK):
             break
+        
 
-    api.UpdateProfile(description="No original content, i am bot 🤖  🤖  🤖 Bot is: OFF")
+    #api.UpdateProfile(description="No original content, i am bot 🤖  🤖  🤖 Bot is: OFF")
     
     api.ClearCredentials()
 
@@ -137,3 +138,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
