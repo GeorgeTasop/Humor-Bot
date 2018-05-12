@@ -3,12 +3,10 @@ import sqlite3
 import time
 from time import strftime, localtime
 import random
-import re
 import sys
 
 api = 0
 COUNT = 50
-deleted = 0
 
 def Login():
     global api
@@ -19,7 +17,6 @@ def Login():
     
 
 def Create_Update_Database():
-    
     global api
 
 
@@ -41,12 +38,11 @@ def Create_Update_Database():
                                       VALUES (?,?);''', (t.id_str, t.user.name))
 
     conn.commit()
-    epiloges = len(friends)*COUNT        
     conn.close()
 
 def Retweet():
-    
-    global api, deleted
+    global api
+
     funny=False
     posted = False
 
@@ -89,7 +85,6 @@ def Retweet():
                 posted = False
                 conn.execute("UPDATE TWEETS SET POSTED=1 WHERE ID=?;", (theTweet,))
 
-    #print "Closing database..."
     conn.commit()
     conn.close()
     
@@ -138,4 +133,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
