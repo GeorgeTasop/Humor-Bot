@@ -1,0 +1,124 @@
+import twitter
+import sqlite3
+import time
+from time import strftime, localtime
+import random
+import re
+import sys
+
+api = 0
+COUNT = 50
+deleted = 0
+
+def Login():
+    global api
+    api = twitter.Api(consumer_key='idhfKrGd1m8Y0HOwoUykyWSGL',
+                  consumer_secret='MGDbvf1V5omaGVaMmwHjsaLtJlZa00RAIaqIDNVzvpi8P8ABHZ'
+                  ,access_token_key='960695969745637376-DKWpgTwAWuxwAtGyRtE9SS64vyBYN0m'
+                  ,access_token_secret='xkeWTdWgsGSPym3RwacumpLununkggaZ5Zl2fa1OdbNQB')
+    
+
+def Create_Update_Database():
+    
+    global api
+
+    f = open('Database.txt', 'w')
+    friends = api.GetFriendIDs()
+
+    for friend in friends:
+    
+        timeline = api.GetUserTimeline(user_id=friend, count=COUNT)
+        for t in timeline:
+            
+            f.write(str(t.id))
+            f.write('\n')
+
+    epiloges = len(friends)*COUNT        
+    f.close()
+
+def Retweet(posted):
+    
+    global api, deleted
+    funny=False
+    
+    while (funny==False):    
+        
+        
+        f = open('Database.txt', 'r+')
+
+        d = f.readlines()
+        
+        epiloges = len(d)
+        floatTweet = random.random()*epiloges
+        theTweet = int(floatTweet)
+        stringID = d[theTweet]
+        
+        f.seek(0)
+        for i in d:
+            if i != stringID:
+                f.write(i)
+        f.truncate()
+        f.close()
+        
+        intID = re.findall(r'\d+', stringID)[0]
+
+        deleted = deleted + 1
+        status = api.GetStatus(intID)
+        if (not(status.urls)):
+            if(not(status.in_reply_to_screen_name)):
+                if(not(status.user_mentions)):
+                    funny = True
+
+    #print status    
+    try:
+        posted = True
+        api.PostRetweet(status_id=intID)
+        #print intID
+    except Exception as error:
+        print "Exception caught"
+        print str(error)
+        posted = False
+
+    return posted
+    
+
+
+#---------------------MAIN----------------------------#
+
+start = time.clock()
+SLEEP_TIME = 18 #seconds
+BOT_O_CLOCK = 18 #seconds
+
+print "Now starting Humor_bot_v0.01\n"
+Login()
+
+api.UpdateProfile(description="No original content, i am bot 🤖  🤖  🤖 Bot is: ON")
+
+print "Login successfull! Bot is: ON"
+while(True):
+
+    print "Creating or updating Database"
+    print "..."
+    #Create_Update_Database()
+    
+
+    while(True):
+        posted = False
+        while (posted == False):
+            posted = Retweet(posted)
+        print "I just retweeted! Check it here: 'https://twitter.com/G_Tasop'"
+        print "Time now:", strftime("%d %b %H:%M:%S", localtime())
+        print "Next retweet in", SLEEP_TIME, "seconds"
+        print "..."
+        time.sleep(SLEEP_TIME)
+        if ( (time.clock() - start) > BOT_O_CLOCK):
+            break
+    if ( (time.clock() - start) > BOT_O_CLOCK):
+        break
+
+api.UpdateProfile(description="No original content, i am bot 🤖  🤖  🤖 Bot is: OFF")
+api.ClearCredentials()
+
+print "Humor_bot_v0.01 has terminated"
+
+
