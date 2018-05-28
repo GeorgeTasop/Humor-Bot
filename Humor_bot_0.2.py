@@ -10,7 +10,7 @@ COUNT = 50
 
 def Login():
     global api
-    api = twitter.Api(consumer_key='idhfKrGd1m8Y0HOwoUykyWSGL',
+    api = twitter.Api(consumer_key='idhfKrGd1m8Y0HOwoUykyWSGLpaMe',
                   consumer_secret='MGDbvf1V5omaGVaMmwHjsaLtJlZa00RAIaqIDNVzvpi8P8ABHZ'
                   ,access_token_key='960695969745637376-DKWpgTwAWuxwAtGyRtE9SS64vyBYN0m'
                   ,access_token_secret='xkeWTdWgsGSPym3RwacumpLununkggaZ5Zl2fa1OdbNQB')
